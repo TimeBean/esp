@@ -1,5 +1,8 @@
 # screen — GMT130 240×240 IPS display (ST7789)
 
+> **Status: future project.** Hardware wiring is documented below; firmware has
+> not been written yet.
+
 Wiring the GMT130 240×240 IPS display (ST7789VW controller) to an
 ESP32-WROOM-32 over SPI. The wiring was verified on the actual board: each
 wire was traced from the display connector to the ESP32 headers.
@@ -20,13 +23,12 @@ wire was traced from the display connector to the ESP32 headers.
 
 - **SPI mode 3 is required** (mode 0/2 → init succeeds in the logs, but the
   panel samples data on the wrong clock edge and shows a solid black screen).
-  Set `io_config.spi_mode = 3` in `main/led.cpp`.
 - The panel is GMT130-V1.0, ST7789VW (ST7789) controller, 240×240, no CS pin.
 
 ## Photos
 
-![Display 1](1.png)
+![GMT130 display](display.webp)
 
-![Display 2](2.png)
+![Display wired to the ESP32, top view](screen-top-view.webp)
 
-![Display 3](3.webp)
+![Wiring close-up](wiring-closeup.webp)
