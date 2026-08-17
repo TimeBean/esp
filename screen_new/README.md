@@ -21,13 +21,33 @@ server is rendered on the display.
 
 ### WiFi credentials
 
-Credentials are **not** stored in the repo. Copy the template to a
-gitignored file and fill in your values:
+The WiFi network name and password are **not** stored in the repo.
+To set them up on a fresh clone:
 
-```bash
-cp include/secrets.example.h include/secrets.h
-# edit include/secrets.h
-```
+1. Create `include/secrets.h` from the template:
+
+   ```bash
+   cp include/secrets.example.h include/secrets.h
+   ```
+
+2. Open `include/secrets.h` and set your values:
+
+   ```cpp
+   #define WIFI_SSID "your_wifi_ssid"
+   #define WIFI_PASSWORD "your_wifi_password"
+   ```
+
+   > `include/secrets.h` is listed in `.gitignore` and will never be
+   > committed. Only `include/secrets.example.h` (the template) is tracked.
+
+3. Build and flash:
+
+   ```bash
+   pio run -t upload
+   ```
+
+The device connects to the SSID from `secrets.h` and starts the HTTP
+server on `http_service`.
 
 ## HTTP API
 
