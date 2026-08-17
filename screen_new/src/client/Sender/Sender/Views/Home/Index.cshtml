@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div>
+    <form id="send-form" asp-controller="Home" asp-action="Send" method="post">
+        <label for="address">IP address:</label><br>
+        <input type="text" id="address" name="address" value="192.168.0.77/data" required><br><br>
+
+        <label for="message">Message:</label><br>
+        <textarea id="message" name="message" rows="5" cols="30"></textarea><br><br>
+
+        <button type="submit" id="send-button">POST</button>
+    </form>
+
+    <p id="result" hidden></p>
+</div>
