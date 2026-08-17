@@ -22,6 +22,10 @@ pio device monitor         # open serial monitor (115200)
 | Monitor speed      | 115200                           |
 | Upload speed       | 921600                           |
 
+## Demo
+
+![LED blinking in action](media/2026_08_17_led.mp4)
+
 ## Useful links
 
 - [ESP32 Pinout Reference](https://randomnerdtutorials.com/esp32-pinout-reference-gpios/) —
