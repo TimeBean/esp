@@ -16,7 +16,7 @@ pio device monitor         # open serial monitor (115200)
 ## Firmware
 
 `src/main.cpp` initializes the panel with `TFT_eSPI` and draws the text
-«Hello World from ESP32!» at three font sizes:
+«Hello / World / from ESP32» at three font sizes:
 
 - line 0: size 5 (`font_size + 3`)
 - line 1: size 5 (`font_size + 3`)
