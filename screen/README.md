@@ -56,7 +56,7 @@ output is static — no animation.
 
 ## Demo
 
-[Watch the demo](media/demo.mp4)
+![Display demo](media/poster.png)
 
 ## Photos
 
