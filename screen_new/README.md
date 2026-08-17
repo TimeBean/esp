@@ -15,15 +15,41 @@ pio device monitor         # open serial monitor (115200)
 
 ## Firmware
 
-`src/main.cpp` initializes the panel with `TFT_eSPI` and draws the text
-«Hello World from ESP32!» at three font sizes:
+`src/main.cpp` initializes the panel with `TFT_eSPI` and runs an HTTP
+server (`http_service`) on the WiFi network `PLACEHOLDER_SSID`. Any JSON body
+posted to the server is rendered on the display.
 
-- line 0: size 5 (`font_size + 3`)
-- line 1: size 5 (`font_size + 3`)
-- line 2: size 4 (`font_size + 2`)
+## HTTP API
 
-Lines are spaced by `text_y_offset = 46` pixels starting at `y = 20`. The
-output is static — no animation.
+The display accepts text over HTTP and draws it to the screen.
+
+### `POST /data`
+
+Request body (JSON):
+
+```json
+{"value":"Hello\nWorld"}
+```
+
+- `value` — text to draw. `\n` (decoded from the JSON escape) starts a new
+  line; each line is drawn `newline_y_offset = 32` pixels below the
+  previous one, starting at `(20, 20)`.
+- Font size is `2` (`write_service(2, true)`).
+
+Example:
+
+```bash
+curl -X POST http://192.168.0.77/data \
+     -H "Content-Type: application/json" \
+     -d '{"value":"Hello\nWorld"}'
+```
+
+Responses:
+
+| Code | Meaning                                   |
+|------|-------------------------------------------|
+| 200  | `{"status":"ok"}` — text drawn            |
+| 400  | `{"error":"no body"}` / `{"error":"invalid json"}` |
 
 ## Configuration
 
