@@ -27,8 +27,8 @@ wire was traced from the display connector to the ESP32 headers.
 
 ## Photos
 
-![GMT130 display](display.webp)
+![GMT130 display](media/display.webp)
 
-![Display wired to the ESP32, top view](screen-top-view.webp)
+![Display wired to the ESP32, top view](media/screen-top-view.webp)
 
-![Wiring close-up](wiring-closeup.webp)
+![Wiring close-up](media/wiring-closeup.webp)
