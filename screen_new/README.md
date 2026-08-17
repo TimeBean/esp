@@ -16,8 +16,18 @@ pio device monitor         # open serial monitor (115200)
 ## Firmware
 
 `src/main.cpp` initializes the panel with `TFT_eSPI` and runs an HTTP
-server (`http_service`) on the WiFi network `PLACEHOLDER_SSID`. Any JSON body
-posted to the server is rendered on the display.
+server (`http_service`) on a WiFi network. Any JSON body posted to the
+server is rendered on the display.
+
+### WiFi credentials
+
+Credentials are **not** stored in the repo. Copy the template to a
+gitignored file and fill in your values:
+
+```bash
+cp include/secrets.example.h include/secrets.h
+# edit include/secrets.h
+```
 
 ## HTTP API
 

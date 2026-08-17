@@ -1,5 +1,6 @@
 #include <Arduino.h>
 
+#include "secrets.h"
 #include "infrastructure/write_service.h"
 #include "infrastructure/http_service.h"
 
@@ -12,7 +13,7 @@ void setup()
 
 	writer = new write_service(2, true);
 
-	http = new http_service("PLACEHOLDER_SSID", "PLACEHOLDER_PASSWORD", true, true);
+	http = new http_service(WIFI_SSID, WIFI_PASSWORD, true, true);
 	http->init();
 }
 
