@@ -56,7 +56,7 @@ output is static — no animation.
 
 ## Demo
 
-<video src="media/demo.mp4" controls width="360"></video>
+[Watch the demo](media/demo.mp4)
 
 ## Photos
 

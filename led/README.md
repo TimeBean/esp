@@ -24,7 +24,7 @@ pio device monitor         # open serial monitor (115200)
 
 ## Demo
 
-<video src="media/demo.mp4" controls width="360"></video>
+[Watch the demo](media/demo.mp4)
 
 ## Useful links
 
