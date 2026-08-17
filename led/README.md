@@ -24,7 +24,7 @@ pio device monitor         # open serial monitor (115200)
 
 ## Demo
 
-![LED blinking in action](media/2026_08_17_led.mp4)
+<video src="media/demo.mp4" controls width="360"></video>
 
 ## Useful links
 
