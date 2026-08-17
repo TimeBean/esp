@@ -37,7 +37,7 @@ void http_service::init()
             return;
         }
 
-        String body = server.arg("plain");
+        const String body = server.arg("plain");
 
         if (is_debug)
         {
@@ -45,9 +45,9 @@ void http_service::init()
             Serial.println(body);
         }
 
-        StaticJsonDocument<256> doc;
+        JsonDocument doc;
 
-        DeserializationError error = deserializeJson(doc, body);
+        const DeserializationError error = deserializeJson(doc, body);
 
         if (error)
         {
@@ -56,18 +56,15 @@ void http_service::init()
             return;
         }
 
-        String value = doc["value"].as<String>();
+        last_value = doc["value"].as<String>();
 
         if (is_debug)
         {
             Serial.print("Value: ");
-            Serial.println(value);
+            Serial.println(last_value);
         }
 
-        last_value = value;
-
-        server.send(200, "application/json",
-                    "{\"status\":\"ok\"}");
+        server.send(200, "application/json", "{\"status\":\"ok\"}");
     });
 
     server.begin();
