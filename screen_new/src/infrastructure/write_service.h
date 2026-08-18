@@ -8,9 +8,12 @@ class write_service : public Iwrite_service
     unsigned int base_font_size;
     bool is_debug;
     unsigned int newline_y_offset;
+    uint8_t *frame_buffer;
+    bool dma_available;
 
 public:
     write_service(unsigned int font_size, bool is_debug, unsigned int newline_y_offset = 32);
+    ~write_service();
     void print_text(const char *text, unsigned int max_length = 0) override;
     bool print_image_file(const char *path) override;
     void clear() override;

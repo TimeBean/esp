@@ -1,6 +1,7 @@
 #include "write_service.h"
 #include <Arduino.h>
 #include <LittleFS.h>
+#include <esp_heap_caps.h>
 
 namespace
 {
@@ -11,16 +12,55 @@ namespace
 }
 
 write_service::write_service(unsigned int font_size, bool is_debug, unsigned int newline_y_offset)
-    : tft(), base_font_size(font_size), is_debug(is_debug), newline_y_offset(newline_y_offset)
+    : tft(), base_font_size(font_size), is_debug(is_debug), newline_y_offset(newline_y_offset),
+      frame_buffer(nullptr), dma_available(false)
 {
+    // Banded DMA buffer. A single whole-frame (115,200-byte) DMA buffer is
+    // impossible on classic ESP32: the largest contiguous DMA heap block is
+    // only ~110 KB. 80 rows = 38,400 bytes fits comfortably.
+    constexpr unsigned int kBandRows = 80;
+    const size_t band_bytes = static_cast<size_t>(TFT_WIDTH) * 2u * kBandRows;
+    frame_buffer = static_cast<uint8_t *>(
+        heap_caps_malloc(band_bytes, MALLOC_CAP_DMA | MALLOC_CAP_8BIT));
+    if (!frame_buffer)
+    {
+        frame_buffer = static_cast<uint8_t *>(malloc(band_bytes));
+    }
+
     tft.init();
     tft.setRotation(0);
+#ifdef USE_DMA
+    dma_available = tft.initDMA();
+#endif
     clear();
+
+    Serial.println("--- display boot ---");
+    Serial.print("SPI_FREQUENCY=");
+    Serial.println(SPI_FREQUENCY);
+    Serial.print("initDMA=");
+    Serial.println(dma_available ? "true" : "false");
+    Serial.print("frame_buffer=");
+    Serial.println(frame_buffer ? "ok" : "FAILED");
+    Serial.print("dma_free=");
+    Serial.println(heap_caps_get_free_size(MALLOC_CAP_DMA));
+    Serial.print("dma_largest_block=");
+    Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_DMA));
+    Serial.print("free_heap=");
+    Serial.println(ESP.getFreeHeap());
 
     init_font();
     tft.setTextFont(1);
 
     tft.setTextColor(TFT_WHITE);
+}
+
+write_service::~write_service()
+{
+    if (frame_buffer)
+    {
+        heap_caps_free(frame_buffer);
+        frame_buffer = nullptr;
+    }
 }
 
 void write_service::init_font()
@@ -100,6 +140,49 @@ bool write_service::print_image_file(const char *path)
     }
 
     tft.setSwapBytes(true);
+
+    if (frame_buffer)
+    {
+        constexpr unsigned int kBandRows = 80;
+        const unsigned int width = tft.width();
+        const unsigned int height = tft.height();
+
+        tft.startWrite();
+        for (unsigned int y = 0; y < height; y += kBandRows)
+        {
+            const unsigned int rows = min(kBandRows, height - y);
+            const size_t want = row_bytes * rows;
+            size_t offset = 0;
+            while (offset < want)
+            {
+                const int read = file.read(frame_buffer + offset, want - offset);
+                if (read <= 0)
+                {
+                    file.close();
+                    tft.endWrite();
+                    return false;
+                }
+                offset += static_cast<size_t>(read);
+            }
+
+#ifdef USE_DMA
+            tft.pushImageDMA(0, static_cast<int32_t>(y), static_cast<int32_t>(width),
+                             static_cast<int32_t>(rows),
+                             reinterpret_cast<uint16_t *>(frame_buffer));
+            while (tft.dmaBusy())
+            {
+            }
+#else
+            tft.pushImage(0, static_cast<int32_t>(y), static_cast<int32_t>(width),
+                          static_cast<int32_t>(rows),
+                          reinterpret_cast<uint16_t *>(frame_buffer));
+#endif
+        }
+        tft.endWrite();
+
+        file.close();
+        return true;
+    }
 
     uint8_t row[480];
     for (unsigned int y = 0; y < static_cast<unsigned int>(tft.height()); y++)
