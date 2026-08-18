@@ -1,11 +1,13 @@
 #include "write_service.h"
+#include <Arduino.h>
+#include <LittleFS.h>
 
 namespace
 {
-constexpr int kValueFontSize = 3;
-constexpr int kMetricFontSize = 3;
-constexpr int kValueMetricGap = 40;
-constexpr float kHiddenValue = -1.0f;
+    constexpr int kValueFontSize = 3;
+    constexpr int kMetricFontSize = 3;
+    constexpr int kValueMetricGap = 40;
+    constexpr float kHiddenValue = -1.0f;
 }
 
 write_service::write_service(unsigned int font_size, bool is_debug, unsigned int newline_y_offset)
@@ -14,8 +16,30 @@ write_service::write_service(unsigned int font_size, bool is_debug, unsigned int
     tft.init();
     tft.setRotation(0);
     clear();
-    tft.setTextColor(TFT_WHITE);
+
+    init_font();
     tft.setTextFont(1);
+
+    tft.setTextColor(TFT_WHITE);
+}
+
+void write_service::init_font()
+{
+    fs::File font_file = LittleFS.open("/NotoSans-Regular20.vlw");
+    if (is_debug)
+    {
+        if (font_file)
+        {
+            Serial.println("Font OK");
+            Serial.println(font_file.size());
+        }
+        else
+        {
+            Serial.println("Font missing");
+        }
+    }
+
+    tft.loadFont("NotoSans-Regular20", LittleFS);
 }
 
 void write_service::clear()

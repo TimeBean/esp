@@ -15,6 +15,7 @@ public:
     void clear() override;
     /// @brief Not affected by base_font_size.
     void print_in_corner_of_4(const unsigned int corner_id, const float value, const char *metric) override;
+    void init_font();
 
     static String wrap_by_width(const String &line, unsigned int max_length);
     static String wrap_by_newline(const char *text, unsigned int max_length);
