@@ -81,6 +81,36 @@ Responses:
 | 200  | `{"status":"ok"}` — text drawn            |
 | 400  | `{"error":"no body"}` / `{"error":"invalid json"}` |
 
+### `POST /image`
+
+Displays a 240×240 image. Request body is the **raw** image data, not JSON:
+
+- `Content-Type: application/octet-stream`
+- exactly `240 × 240 × 2 = 115 200` bytes
+- one pixel per 2 bytes, **RGB565 little-endian**
+  (`byte[2i] = rgb565 & 0xFF`, `byte[2i+1] = rgb565 >> 8`), rows from
+  top-left, each row 240 pixels wide.
+- `rgb565 = (r >> 3) << 11 | (g >> 2) << 5 | (b >> 3)`
+
+Example (a `.r565` file already converted):
+
+```bash
+curl -X POST http://192.168.0.77/image \
+     -H "Content-Type: application/octet-stream" \
+     --data-binary @image.r565
+```
+
+Responses:
+
+| Code | Meaning                                 |
+|------|-----------------------------------------|
+| 200  | `{"status":"ok"}` — image drawn         |
+| 400  | `{"error":"bad image"}` — wrong size/body |
+
+The web client in `src/client/Sender` can upload any image (JPG/PNG/…); it
+resizes (center-crop) to 240×240 and converts to RGB565 on the server before
+posting.
+
 ## Configuration
 
 | Parameter          | Value                            |
