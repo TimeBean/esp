@@ -12,6 +12,7 @@ class write_service : public Iwrite_service
 public:
     write_service(unsigned int font_size, bool is_debug, unsigned int newline_y_offset = 32);
     void print_text(const char *text, unsigned int max_length = 0) override;
+    bool print_image_file(const char *path) override;
     void clear() override;
     /// @brief Not affected by base_font_size.
     void print_in_corner_of_4(const unsigned int corner_id, const float value, const char *metric) override;

@@ -80,6 +80,43 @@ void write_service::print_text(const char *text, unsigned int max_length)
     }
 }
 
+bool write_service::print_image_file(const char *path)
+{
+    const size_t row_bytes = static_cast<size_t>(tft.width()) * 2u;
+    const size_t expected = row_bytes * static_cast<size_t>(tft.height());
+
+    fs::File file = LittleFS.open(path, "r");
+    if (!file || file.size() < expected)
+    {
+        if (is_debug)
+        {
+            Serial.println("Image skipped: file missing or bad size");
+        }
+        if (file)
+        {
+            file.close();
+        }
+        return false;
+    }
+
+    tft.setSwapBytes(true);
+
+    uint8_t row[480];
+    for (unsigned int y = 0; y < static_cast<unsigned int>(tft.height()); y++)
+    {
+        if (file.read(row, row_bytes) != static_cast<int>(row_bytes))
+        {
+            file.close();
+            return false;
+        }
+        tft.pushImage(0, static_cast<int32_t>(y), tft.width(), 1,
+                      reinterpret_cast<const uint16_t *>(row));
+    }
+
+    file.close();
+    return true;
+}
+
 String write_service::strip_leading_spaces(const String &line)
 {
     unsigned int i = 0;
