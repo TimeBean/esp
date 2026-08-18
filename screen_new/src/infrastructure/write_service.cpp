@@ -131,7 +131,7 @@ String write_service::wrap_by_newline(const char *text, unsigned int max_length)
             String line(line_start, p - line_start);
             if (!first_line)
             {
-                line = strip_leading_spaces(line);
+                // line = strip_leading_spaces(line);
             }
             wrapped += wrap_by_width(line, max_length);
             if (*p == '\0')
