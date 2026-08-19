@@ -48,7 +48,8 @@ write_service::write_service(unsigned int font_size, bool is_debug, unsigned int
     Serial.print("free_heap=");
     Serial.println(ESP.getFreeHeap());
 
-    init_font();
+    // init_font();
+    tft.setTextDatum(ML_DATUM);
     tft.setTextFont(1);
 
     tft.setTextColor(TFT_WHITE);
@@ -118,6 +119,15 @@ void write_service::print_text(const char *text, unsigned int max_length)
     {
         tft.drawString(String(start, p - start), x, y);
     }
+}
+
+void write_service::print_ready_message()
+{
+    clear();
+    tft.setTextDatum(MC_DATUM);
+    tft.setTextSize(base_font_size);
+    tft.drawString("Ready", tft.width() / 2, tft.height() / 2);
+    tft.setTextDatum(ML_DATUM);
 }
 
 void write_service::strip_leading_spaces(const String &line)

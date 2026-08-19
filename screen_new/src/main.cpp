@@ -8,6 +8,7 @@
 
 constexpr bool IS_DEBUG = true;
 constexpr unsigned long LED_ON_DURATION_MS = 100;
+constexpr unsigned long SPLASH_DURATION_SECONDS = 3;
 
 write_service *writer;
 http_service *http;
@@ -20,6 +21,18 @@ void setup()
 
     writer = new write_service(2, IS_DEBUG, 16);
     led = new led_service(BUILTIN_LED);
+
+    if (writer->print_image_file("/poweredby.r565"))
+    {
+        delay(SPLASH_DURATION_SECONDS * 1000UL);
+    }
+    else if (IS_DEBUG)
+    {
+        Serial.println("Logo missing, skipping splash");
+    }
+
+    writer->print_ready_message();
+    // led->blink(LED_ON_DURATION_MS);
 
     http = new http_service(WIFI_SSID, WIFI_PASSWORD, IS_DEBUG, IS_DEBUG);
     http->init();
