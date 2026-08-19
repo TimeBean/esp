@@ -57,17 +57,18 @@ dotnet run --project RepeatDataSender
 | `TargetUri`                    | `http://192.168.0.77/data`  | ESP endpoint to POST to.                  |
 | `IntervalMilliseconds`         | `5000`                      | Delay between full cycles.                |
 | `DelayBetweenMetricsMilliseconds` | `1000`                   | Delay between each variant within a cycle.|
-| `Metrics`                      | 6 variants                  | The N metric variants to display.         |
+| `Disks`                        | `["/", "/mnt/nvme0n1p2"]`   | Mount points whose free space is collected.|
+| `Metrics`                      | 4 variants                  | The N metric variants to display.         |
 
 Each `Metrics` entry:
 
 ```json
 {
-  "Value": "{Load1}",
-  "Label": "LOAD 1m",
-  "ValueX": 20,  "ValueY": 20,
-  "MetricX": 20, "MetricY": 60,
-  "ValueFontSize": 3, "MetricFontSize": 2
+  "Value": "{UptimeHours}",
+  "Label": "UPTIME",
+  "ValueX": 120, "ValueY": 120,
+  "MetricX": 120, "MetricY": 160,
+  "ValueFontSize": 5, "MetricFontSize": 3
 }
 ```
 
@@ -91,12 +92,15 @@ Collected every cycle from `LinuxDotNet.SystemInfo`:
 |---------|--------------|
 | CPU     | `{CpuBrand}` `{CpuVendor}` `{CpuLogical}` `{CpuPhysical}` `{CpuFrequencyMaxMhz}` `{CpuUsage}` |
 | Load    | `{Load1}` `{Load5}` `{Load15}` |
-| Memory  | `{MemoryTotalMb}` `{MemoryAvailableMb}` `{MemoryUsedMb}` `{MemoryUsedPercent}` `{SwapTotalMb}` `{SwapFreeMb}` `{SwapUsedMb}` |
-| Disk /  | `{RootTotalMb}` `{RootUsedMb}` `{RootAvailableMb}` `{RootUsedPercent}` |
+| Memory  | `{MemoryTotalMb}` `{MemoryAvailableMb}` `{MemoryUsedMb}` `{MemoryUsedPercent}` `{MemoryAvailableGb}` `{SwapTotalMb}` `{SwapFreeMb}` `{SwapUsedMb}` |
+| Disk    | `{FreeGb_<path>}` per entry in `Disks` — `/` → `{FreeGb_Root}`, `/mnt/nvme0n1p2` → `{FreeGb_mnt_nvme0n1p2}`; `{RootTotalMb}` `{RootUsedMb}` `{RootAvailableMb}` `{RootUsedPercent}` (root only) |
 | Network | `{NetInterface}` `{NetRxBytes}` `{NetTxBytes}` (first non-loopback iface) |
-| System  | `{Uptime}` `{Processes}` `{Threads}` `{RunningTasks}` `{BlockedTasks}` |
+| System  | `{Uptime}` `{UptimeHours}` `{Processes}` `{Threads}` `{RunningTasks}` `{BlockedTasks}` |
 | OS      | `{OsName}` `{Kernel}` `{BootTime}` |
 | Battery | `{BatteryPercent}` `{BatteryStatus}` `{BatteryVoltageV}` (only when present) |
+
+`{UptimeHours}`, `{MemoryAvailableGb}` and `{FreeGb_<path>}` are rounded to
+whole numbers (no decimal point).
 
 Placeholders whose hardware is unavailable (e.g. no battery on a desktop) are
 **not** collected; an unknown token stays visible in the sent text as-is, so a

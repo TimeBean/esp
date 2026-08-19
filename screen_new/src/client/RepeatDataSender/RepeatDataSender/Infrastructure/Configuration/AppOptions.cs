@@ -15,6 +15,8 @@ public sealed class AppOptions
 
     public int DelayBetweenMetricsMilliseconds { get; set; } = 1000;
 
+    public List<string> Disks { get; set; } = ["/", "/mnt/nvme0n1p2"];
+
     public List<MetricOptions> Metrics { get; set; } = [];
 }
 

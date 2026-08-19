@@ -8,9 +8,10 @@ namespace RepeatDataSender.Infrastructure.Linux;
 /// Collects all relevant system metrics on Linux (via the
 /// LinuxDotNet.SystemInfo package, which reads /proc and /sys).
 /// </summary>
-public sealed class LinuxSystemInfoCollector : ISystemInfoCollector
+public sealed class LinuxSystemInfoCollector(IEnumerable<string> diskPaths) : ISystemInfoCollector
 {
     private const int CpuUsageSampleDelayMilliseconds = 200;
+    private readonly string[] diskPaths = diskPaths.ToArray();
 
     public Task<MetricSnapshot> CollectAsync(CancellationToken cancellationToken)
     {
@@ -24,7 +25,6 @@ public sealed class LinuxSystemInfoCollector : ISystemInfoCollector
         var load = PlatformProvider.GetLoadAverage();
         var memory = PlatformProvider.GetMemoryStat();
         var system = PlatformProvider.GetSystemStat();
-        var fileSystem = PlatformProvider.GetFileSystemUsage("/");
         var network = PlatformProvider.GetNetworkStat();
         var processes = PlatformProvider.GetProcessSummary();
         var battery = PlatformProvider.GetBatteryDevice();
@@ -42,17 +42,26 @@ public sealed class LinuxSystemInfoCollector : ISystemInfoCollector
         values[MetricPlaceholders.Load5] = load.Average5.ToString("0.00");
         values[MetricPlaceholders.Load15] = load.Average15.ToString("0.00");
 
-        // Memory
-        values[MetricPlaceholders.MemoryTotalMb] = ToMegabytes(memory.MemoryTotal);
-        values[MetricPlaceholders.MemoryAvailableMb] = ToMegabytes(memory.MemoryAvailable);
-        values[MetricPlaceholders.MemoryUsedMb] = ToMegabytes(memory.MemoryTotal - memory.MemoryAvailable);
+        // Memory (MemoryStat values are in KiB)
+        values[MetricPlaceholders.MemoryTotalMb] = ToMegabytesFromKibibytes(memory.MemoryTotal);
+        values[MetricPlaceholders.MemoryAvailableMb] = ToMegabytesFromKibibytes(memory.MemoryAvailable);
+        values[MetricPlaceholders.MemoryUsedMb] = ToMegabytesFromKibibytes(memory.MemoryTotal - memory.MemoryAvailable);
         values[MetricPlaceholders.MemoryUsedPercent] =
             Percent(memory.MemoryTotal, memory.MemoryTotal - memory.MemoryAvailable);
-        values[MetricPlaceholders.SwapTotalMb] = ToMegabytes(memory.SwapTotal);
-        values[MetricPlaceholders.SwapFreeMb] = ToMegabytes(memory.SwapFree);
-        values[MetricPlaceholders.SwapUsedMb] = ToMegabytes(memory.SwapTotal - memory.SwapFree);
+        values[MetricPlaceholders.SwapTotalMb] = ToMegabytesFromKibibytes(memory.SwapTotal);
+        values[MetricPlaceholders.SwapFreeMb] = ToMegabytesFromKibibytes(memory.SwapFree);
+        values[MetricPlaceholders.SwapUsedMb] = ToMegabytesFromKibibytes(memory.SwapTotal - memory.SwapFree);
+        values[MetricPlaceholders.MemoryAvailableGb] = ToGigabytesRoundedFromKibibytes(memory.MemoryAvailable);
+
+        // Configured disks (free space in whole GB)
+        foreach (var path in diskPaths)
+        {
+            var disk = PlatformProvider.GetFileSystemUsage(path);
+            values[MetricPlaceholders.DiskFreeGb(path)] = ToGigabytesRounded(disk.AvailableSize);
+        }
 
         // Root filesystem
+        var fileSystem = PlatformProvider.GetFileSystemUsage("/");
         values[MetricPlaceholders.RootTotalMb] = ToMegabytes(fileSystem.TotalSize);
         values[MetricPlaceholders.RootUsedMb] = ToMegabytes(fileSystem.TotalSize - fileSystem.AvailableSize);
         values[MetricPlaceholders.RootAvailableMb] = ToMegabytes(fileSystem.AvailableSize);
@@ -67,6 +76,7 @@ public sealed class LinuxSystemInfoCollector : ISystemInfoCollector
 
         // System
         values[MetricPlaceholders.Uptime] = FormatUptime(uptime.Elapsed);
+        values[MetricPlaceholders.UptimeHours] = Math.Round(uptime.Elapsed.TotalHours).ToString();
         values[MetricPlaceholders.Processes] = processes.ProcessCount.ToString();
         values[MetricPlaceholders.Threads] = processes.ThreadCount.ToString();
         values[MetricPlaceholders.RunningTasks] = system.RunnableTasks.ToString();
@@ -113,6 +123,21 @@ public sealed class LinuxSystemInfoCollector : ISystemInfoCollector
     private static string ToMegabytes(ulong bytes)
     {
         return (bytes / 1024.0 / 1024.0).ToString("0.##");
+    }
+
+    private static string ToMegabytesFromKibibytes(ulong kibibytes)
+    {
+        return (kibibytes / 1024.0).ToString("0.##");
+    }
+
+    private static string ToGigabytesRounded(ulong bytes)
+    {
+        return Math.Round(bytes / 1024.0 / 1024.0 / 1024.0).ToString();
+    }
+
+    private static string ToGigabytesRoundedFromKibibytes(ulong kibibytes)
+    {
+        return Math.Round(kibibytes / 1024.0 / 1024.0).ToString();
     }
 
     private static string Percent(ulong total, ulong part)
