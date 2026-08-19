@@ -63,12 +63,48 @@ void http_service::init()
             return;
         }
 
-        last_value = doc["value"].as<String>();
-
-        if (is_debug)
+        const char *metric_name = doc["metric"] | "";
+        if (metric_name[0] != '\0')
         {
-            Serial.print("Value: ");
-            Serial.println(last_value);
+            pending_metric.ready = true;
+            pending_metric.value = doc["value"].as<String>();
+            pending_metric.metric = metric_name;
+            pending_metric.value_x = doc["value_x"] | 25;
+            pending_metric.value_y = doc["value_y"] | 25;
+            pending_metric.metric_x = doc["metric_x"] | 25;
+            pending_metric.metric_y = doc["metric_y"] | 80;
+            pending_metric.value_font_size = doc["value_font_size"] | 3;
+            pending_metric.metric_font_size = doc["metric_font_size"] | 3;
+
+            if (is_debug)
+            {
+                Serial.print("Metric: value=");
+                Serial.print(pending_metric.value);
+                Serial.print(" name=");
+                Serial.print(pending_metric.metric);
+                Serial.print(" value@(");
+                Serial.print(pending_metric.value_x);
+                Serial.print(",");
+                Serial.print(pending_metric.value_y);
+                Serial.print(") metric@(");
+                Serial.print(pending_metric.metric_x);
+                Serial.print(",");
+                Serial.print(pending_metric.metric_y);
+                Serial.print(") vfs=");
+                Serial.print(pending_metric.value_font_size);
+                Serial.print(" mfs=");
+                Serial.println(pending_metric.metric_font_size);
+            }
+        }
+        else
+        {
+            last_value = doc["value"].as<String>();
+
+            if (is_debug)
+            {
+                Serial.print("Value: ");
+                Serial.println(last_value);
+            }
         }
 
         server.send(200, "application/json", "{\"status\":\"ok\"}");
@@ -200,5 +236,12 @@ bool http_service::take_image()
     image_ready = false;
     image_receive_error = false;
     received_bytes = 0;
+    return result;
+}
+
+metric_payload http_service::take_metric()
+{
+    metric_payload result = pending_metric;
+    pending_metric.ready = false;
     return result;
 }

@@ -11,6 +11,7 @@ class http_service : public Ihttp_service
     bool is_debug;
     WebServer server;
     String last_value;
+    metric_payload pending_metric;
 
     fs::File image_file;
     size_t received_bytes = 0;
@@ -24,4 +25,5 @@ public:
     void init() override;
     String handle() override;
     bool take_image() override;
+    metric_payload take_metric() override;
 };

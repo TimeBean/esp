@@ -81,6 +81,20 @@ Responses:
 | 200  | `{"status":"ok"}` — text drawn            |
 | 400  | `{"error":"no body"}` / `{"error":"invalid json"}` |
 
+If the body contains a `metric` field, the value is drawn as a metric
+(two lines at independent positions) instead of plain text:
+
+```json
+{"value":"1.4","metric":"metric","value_x":25,"value_y":25,"metric_x":25,"metric_y":80,"value_font_size":3,"metric_font_size":3}
+```
+
+- `value` — text to display (the value).
+- `metric` — label. Presence of this field switches the renderer to
+  `print_one_metric`.
+- `value_x`, `value_y` — position of the value text.
+- `metric_x`, `metric_y` — position of the metric label.
+- `value_font_size`, `metric_font_size` — font sizes of the value and label.
+
 ### `POST /image`
 
 Displays a 240×240 image. Request body is the **raw** image data, not JSON:

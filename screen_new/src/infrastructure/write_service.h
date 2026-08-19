@@ -15,10 +15,16 @@ public:
     write_service(unsigned int font_size, bool is_debug, unsigned int newline_y_offset = 32);
     ~write_service();
     void print_text(const char *text, unsigned int max_length = 0) override;
+    void print_ready_message();
     bool print_image_file(const char *path) override;
     void clear() override;
     /// @brief Not affected by base_font_size.
     void print_in_corner_of_4(const unsigned int corner_id, const float value, const char *metric) override;
+    void print_one_metric(const char *value, const char *metric,
+                          const int value_x = 25, const int value_y = 25,
+                          const int metric_x = 25, const int metric_y = 80,
+                          const unsigned int value_font_size = 3,
+                          const unsigned int metric_font_size = 3) override;
     void init_font();
 
     static String wrap_by_width(const String &line, unsigned int max_length);

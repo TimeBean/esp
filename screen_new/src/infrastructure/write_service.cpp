@@ -120,6 +120,88 @@ void write_service::print_text(const char *text, unsigned int max_length)
     }
 }
 
+void write_service::strip_leading_spaces(const String &line)
+{
+    unsigned int i = 0;
+    while (i < line.length() && line[i] == ' ')
+    {
+        i++;
+    }
+    return line.substring(i);
+}
+
+String write_service::wrap_by_width(const String &line, unsigned int max_length)
+{
+    if (max_length == 0)
+    {
+        return line;
+    }
+    String wrapped;
+    unsigned int col = 0;
+    bool at_line_start = false;
+    for (const char *p = line.c_str(); *p != '\0'; p++)
+    {
+        if (col == max_length)
+        {
+            wrapped += '\n';
+            col = 0;
+            at_line_start = true;
+        }
+        if (at_line_start && *p == ' ')
+        {
+            continue;
+        }
+        wrapped += *p;
+        col++;
+        at_line_start = false;
+    }
+    return wrapped;
+}
+
+String write_service::wrap_by_newline(const char *text, unsigned int max_length)
+{
+    String wrapped;
+    const char *line_start = text;
+    const char *p = text;
+    bool first_line = true;
+    while (true)
+    {
+        if (*p == '\n' || *p == '\0')
+        {
+            String line(line_start, p - line_start);
+            if (!first_line)
+            {
+                // line = strip_leading_spaces(line);
+            }
+            wrapped += wrap_by_width(line, max_length);
+            if (*p == '\0')
+            {
+                break;
+            }
+            wrapped += '\n';
+            line_start = p + 1;
+            first_line = false;
+        }
+        p++;
+    }
+    return wrapped;
+}
+
+void write_service::print_one_metric(const char *value, const char *metric,
+                                     const int value_x, const int value_y,
+                                     const int metric_x, const int metric_y,
+                                     const unsigned int value_font_size,
+                                     const unsigned int metric_font_size)
+{
+    tft.setTextDatum(MC_DATUM);
+    clear();
+    tft.setTextSize(value_font_size);
+    tft.drawString(value, value_x, value_y);
+    tft.setTextSize(metric_font_size);
+    tft.drawString(metric, metric_x, metric_y);
+    tft.setTextDatum(ML_DATUM);
+}
+
 bool write_service::print_image_file(const char *path)
 {
     const size_t row_bytes = static_cast<size_t>(tft.width()) * 2u;
@@ -198,73 +280,6 @@ bool write_service::print_image_file(const char *path)
 
     file.close();
     return true;
-}
-
-String write_service::strip_leading_spaces(const String &line)
-{
-    unsigned int i = 0;
-    while (i < line.length() && line[i] == ' ')
-    {
-        i++;
-    }
-    return line.substring(i);
-}
-
-String write_service::wrap_by_width(const String &line, unsigned int max_length)
-{
-    if (max_length == 0)
-    {
-        return line;
-    }
-    String wrapped;
-    unsigned int col = 0;
-    bool at_line_start = false;
-    for (const char *p = line.c_str(); *p != '\0'; p++)
-    {
-        if (col == max_length)
-        {
-            wrapped += '\n';
-            col = 0;
-            at_line_start = true;
-        }
-        if (at_line_start && *p == ' ')
-        {
-            continue;
-        }
-        wrapped += *p;
-        col++;
-        at_line_start = false;
-    }
-    return wrapped;
-}
-
-String write_service::wrap_by_newline(const char *text, unsigned int max_length)
-{
-    String wrapped;
-    const char *line_start = text;
-    const char *p = text;
-    bool first_line = true;
-    while (true)
-    {
-        if (*p == '\n' || *p == '\0')
-        {
-            String line(line_start, p - line_start);
-            if (!first_line)
-            {
-                // line = strip_leading_spaces(line);
-            }
-            wrapped += wrap_by_width(line, max_length);
-            if (*p == '\0')
-            {
-                break;
-            }
-            wrapped += '\n';
-            line_start = p + 1;
-            first_line = false;
-        }
-        p++;
-    }
-    return wrapped;
 }
 
 void write_service::print_in_corner_of_4(const unsigned int corner_id, const float value, const char *metric)
