@@ -31,3 +31,34 @@
 
     <p id="image-result" hidden></p>
 </div>
+
+<div style="margin-top: 24px;">
+    <h3>Send metric</h3>
+
+    <form id="send-metric-form" asp-controller="Home" asp-action="SendMetric" method="post">
+        <label for="metric-address">IP address:</label><br>
+        <input type="text" id="metric-address" name="address" value="192.168.0.77/data" required><br><br>
+
+        <label for="metric-value">Value (text):</label><br>
+        <input type="text" id="metric-value" name="value" value="1.4"><br>
+        <label for="metric-name">Metric name:</label><br>
+        <input type="text" id="metric-name" name="metric" value="metric"><br><br>
+
+        <label for="metric-value-x">Value X:</label>
+        <input type="number" id="metric-value-x" name="value_x" value="25">
+        <label for="metric-value-y">Value Y:</label>
+        <input type="number" id="metric-value-y" name="value_y" value="25"><br>
+        <label for="metric-metric-x">Metric X:</label>
+        <input type="number" id="metric-metric-x" name="metric_x" value="25">
+        <label for="metric-metric-y">Metric Y:</label>
+        <input type="number" id="metric-metric-y" name="metric_y" value="80"><br>
+        <label for="metric-value-font">Value font size:</label>
+        <input type="number" id="metric-value-font" name="value_font_size" value="3">
+        <label for="metric-metric-font">Metric font size:</label>
+        <input type="number" id="metric-metric-font" name="metric_font_size" value="3"><br><br>
+
+        <button type="submit" id="send-metric-button">Send metric</button>
+    </form>
+
+    <p id="metric-result" hidden></p>
+</div>

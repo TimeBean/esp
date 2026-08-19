@@ -65,4 +65,37 @@
             }
         });
     }
+const metricForm = document.getElementById("send-metric-form");
+    const metricResult = document.getElementById("metric-result");
+    const metricButton = document.getElementById("send-metric-button");
+
+    if (metricForm) {
+        metricForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            metricButton.disabled = true;
+            metricResult.hidden = true;
+
+            const originalText = metricButton.textContent;
+            metricButton.textContent = "Sending...";
+
+            try {
+                const response = await fetch(metricForm.action, {
+                    method: metricForm.method,
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams(new FormData(metricForm)).toString()
+                });
+
+                const data = await response.json();
+                metricResult.textContent = "Result: " + (data.result ?? response.status);
+                metricResult.hidden = false;
+            } catch (err) {
+                metricResult.textContent = "Result: " + err.message;
+                metricResult.hidden = false;
+            } finally {
+                metricButton.disabled = false;
+                metricButton.textContent = originalText;
+            }
+        });
+    }
 })();

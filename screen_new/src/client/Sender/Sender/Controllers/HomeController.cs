@@ -80,6 +80,53 @@ public class HomeController : Controller
         }
     }
 
+    [HttpPost]
+    public async Task<IActionResult> SendMetric(
+        string address,
+        string value,
+        string metric,
+        int value_x,
+        int value_y,
+        int metric_x,
+        int metric_y,
+        int value_font_size,
+        int metric_font_size,
+        CancellationToken ct)
+    {
+        var uri = address.Trim();
+        if (string.IsNullOrWhiteSpace(uri))
+        {
+            return Json(new { success = false, result = "Address is required" });
+        }
+
+        if (!uri.StartsWith("http://") && !uri.StartsWith("https://"))
+            uri = "http://" + uri;
+
+        try
+        {
+            var payload = new
+            {
+                value = value ?? "",
+                metric = metric ?? "",
+                value_x,
+                value_y,
+                metric_x,
+                metric_y,
+                value_font_size,
+                metric_font_size
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(payload);
+            using var client = _httpClientFactory.CreateClient();
+            var response = await client.PostAsync(uri, new StringContent(json, System.Text.Encoding.UTF8, "application/json"), ct);
+            return Json(new { success = true, result = $"{(int)response.StatusCode} {response.ReasonPhrase}" });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, result = ex.Message });
+        }
+    }
+
     private static async Task<byte[]> ImageToRgb565Async(IFormFile file, int size, CancellationToken ct)
     {
         await using var stream = file.OpenReadStream();
